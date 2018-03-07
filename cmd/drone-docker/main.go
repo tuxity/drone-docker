@@ -166,6 +166,11 @@ func main() {
 			Usage:  "compress the build context using gzip",
 			EnvVar: "PLUGIN_COMPRESS",
 		},
+		cli.StringSliceFlag{
+			Name:   "cache-from",
+			Usage:  "images to consider as cache sources",
+			EnvVar: "PLUGIN_CACHE_FROM",
+		},
 		cli.StringFlag{
 			Name:   "repo",
 			Usage:  "docker repository",
@@ -241,6 +246,7 @@ func run(c *cli.Context) error {
 			Squash:      c.Bool("squash"),
 			Pull:        c.BoolT("pull-image"),
 			Compress:    c.Bool("compress"),
+			CacheFrom:   c.StringSlice("cache-from")
 			Repo:        c.String("repo"),
 			LabelSchema: c.StringSlice("label-schema"),
 			NoCache:     c.Bool("no-cache"),

@@ -48,6 +48,7 @@ type (
 		Squash      bool     // Docker build squash
 		Pull        bool     // Docker build pull
 		Compress    bool     // Docker build compress
+		CacheFrom   []string // Docker build cache-from
 		Repo        string   // Docker build repository
 		LabelSchema []string // Label schema map
 		NoCache     bool     // Docker build no-cache
@@ -115,6 +116,10 @@ func (p Plugin) Exec() error {
 	cmds = append(cmds, commandVersion()) // docker version
 	cmds = append(cmds, commandInfo())    // docker info
 
+	for _, img := range p.Build.CacheFrom {
+	  cmds = append(cmds, commandPull(img))
+	}
+
 	cmds = append(cmds, commandBuild(p.Build)) // docker build
 
 	for _, tag := range p.Build.Tags {
@@ -181,6 +186,10 @@ func commandInfo() *exec.Cmd {
 	return exec.Command(dockerExe, "info")
 }
 
+func commandPull(repo string) *exec.Cmd {
+	return exec.Command(dockerExe, "pull", repo)
+}
+
 // helper function to create the docker build command.
 func commandBuild(build Build) *exec.Cmd {
 	args := []string{
@@ -202,6 +211,9 @@ func commandBuild(build Build) *exec.Cmd {
 	}
 	if build.NoCache {
 		args = append(args, "--no-cache")
+	}
+	for _, arg := range build.CacheFrom {
+		args = append(args, "--cache-from", arg)
 	}
 	for _, arg := range build.ArgsEnv {
 		addProxyValue(&build, arg)
